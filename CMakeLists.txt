@@ -21,12 +21,7 @@ add_subdirectory(${GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 target_link_libraries(${PROJECT_NAME} geode-sdk)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Android")
-    target_link_libraries(${PROJECT_NAME} aaudio)
-    # AAudio requires Android API 26+
-    target_compile_options(${PROJECT_NAME} PRIVATE -D__ANDROID_MIN_SDK_VERSION__=26)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        ANDROID_MIN_SDK_VERSION 26
-    )
+    target_link_libraries(${PROJECT_NAME} OpenSLES)
 endif()
 
 setup_geode_mod(${PROJECT_NAME})
