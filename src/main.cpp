@@ -71,20 +71,16 @@ static void stopMicrophone() {}
 #endif
 
 static bool s_wasActive = false;
-static time_point<steady_clock> s_soundStart;
 
-static void processMicInput(PlayLayer* pl) {
+static void processMicInput(GJBaseGameLayer* layer) {
     float sensitivity = (float)Mod::get()->getSettingValue<double>("sensitivity");
-    int holdThresholdMs = (int)Mod::get()->getSettingValue<double>("hold-threshold");
-
     float vol = s_volume.load(std::memory_order_relaxed);
     bool active = (vol >= sensitivity);
 
     if (active && !s_wasActive) {
-        s_soundStart = steady_clock::now();
-        pl->pushButton(1, true);
+        layer->handleButton(true, 1, true);
     } else if (!active && s_wasActive) {
-        pl->pushButton(1, false);
+        layer->handleButton(false, 1, true);
     }
     s_wasActive = active;
 }
@@ -96,12 +92,12 @@ class $modify(MicPlayLayer, PlayLayer) {
 #ifdef GEODE_IS_ANDROID
         if (!startMicrophone()) {
             Notification::create(
-                "MicControl: Failed to access microphone!\nCheck app permissions.",
+                "MicControl: No mic access! Check permissions.",
                 NotificationIcon::Error, 3.f
             )->show();
         } else {
             Notification::create(
-                "MicControl: Microphone active \xF0\x9F\x8E\x99",
+                "MicControl: Mic active!",
                 NotificationIcon::Success, 2.f
             )->show();
         }
