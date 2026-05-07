@@ -32,44 +32,26 @@ static void bufferQueueCallback(SLAndroidSimpleBufferQueueItf bq, void*) {
         double s = s_buffer[i] / 32768.0;
         sum += s * s;
     }
-    s_volume.store(static_cast<float>(std::sqrt(sum / BUFFER_SIZE)), std::memory_order_relaxed);
+    float rms = static_cast<float>(std::sqrt(sum / BUFFER_SIZE));
+    s_volume.store(rms, std::memory_order_relaxed);
+    // Логуємо кожен фрейм щоб побачити реальні значення
+    log::debug("MicControl RMS: {:.5f}", rms);
     (*bq)->Enqueue(bq, s_buffer, sizeof(s_buffer));
 }
 
 static bool startMicrophone() {
     if (s_micRunning) return true;
-
-    // Create engine
-    if (slCreateEngine(&s_engineObj, 0, nullptr, 0, nullptr, nullptr) != SL_RESULT_SUCCESS) return false;
-    if ((*s_engineObj)->Realize(s_engineObj, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) return false;
-    if ((*s_engineObj)->GetInterface(s_engineObj, SL_IID_ENGINE, &s_engine) != SL_RESULT_SUCCESS) return false;
-
-    // Configure audio source
-    SLDataLocator_IODevice ioDevice = {
-        SL_DATALOCATOR_IODEVICE,
-        SL_IODEVICE_AUDIOINPUT,
-        SL_DEFAULTDEVICEID_AUDIOINPUT,
-        nullptr
-    };
+    SLDataLocator_IODevice ioDevice = {SL_DATALOCATOR_IODEVICE, SL_IODEVICE_AUDIOINPUT, SL_DEFAULTDEVICEID_AUDIOINPUT, nullptr};
     SLDataSource audioSrc = {&ioDevice, nullptr};
-
-    // Configure audio sink
-    SLDataLocator_AndroidSimpleBufferQueue bufQueue = {
-        SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2
-    };
-    SLDataFormat_PCM format = {
-        SL_DATAFORMAT_PCM, 1,
-        SL_SAMPLINGRATE_16,
-        SL_PCMSAMPLEFORMAT_FIXED_16,
-        SL_PCMSAMPLEFORMAT_FIXED_16,
-        SL_SPEAKER_FRONT_CENTER,
-        SL_BYTEORDER_LITTLEENDIAN
-    };
+    SLDataLocator_AndroidSimpleBufferQueue bufQueue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
+    SLDataFormat_PCM format = {SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN};
     SLDataSink audioSnk = {&bufQueue, &format};
-
     const SLInterfaceID ids[1] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
     const SLboolean req[1] = {SL_BOOLEAN_TRUE};
 
+    if (slCreateEngine(&s_engineObj, 0, nullptr, 0, nullptr, nullptr) != SL_RESULT_SUCCESS) return false;
+    if ((*s_engineObj)->Realize(s_engineObj, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) return false;
+    if ((*s_engineObj)->GetInterface(s_engineObj, SL_IID_ENGINE, &s_engine) != SL_RESULT_SUCCESS) return false;
     if ((*s_engine)->CreateAudioRecorder(s_engine, &s_recorderObj, &audioSrc, &audioSnk, 1, ids, req) != SL_RESULT_SUCCESS) return false;
     if ((*s_recorderObj)->Realize(s_recorderObj, SL_BOOLEAN_FALSE) != SL_RESULT_SUCCESS) return false;
     if ((*s_recorderObj)->GetInterface(s_recorderObj, SL_IID_RECORD, &s_recorder) != SL_RESULT_SUCCESS) return false;
@@ -104,8 +86,14 @@ static void processMicInput(GJBaseGameLayer* layer) {
     float sensitivity = (float)Mod::get()->getSettingValue<double>("sensitivity");
     float vol = s_volume.load(std::memory_order_relaxed);
     bool active = (vol >= sensitivity);
-    if (active && !s_wasActive) layer->handleButton(true, 1, true);
-    else if (!active && s_wasActive) layer->handleButton(false, 1, true);
+
+    if (active && !s_wasActive) {
+        log::info("MicControl: JUMP! vol={:.5f} sensitivity={:.5f}", vol, sensitivity);
+        layer->handleButton(true, 1, true);
+    } else if (!active && s_wasActive) {
+        log::info("MicControl: RELEASE vol={:.5f}", vol);
+        layer->handleButton(false, 1, true);
+    }
     s_wasActive = active;
 }
 
