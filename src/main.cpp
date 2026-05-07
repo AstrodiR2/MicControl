@@ -34,8 +34,6 @@ static void bufferQueueCallback(SLAndroidSimpleBufferQueueItf bq, void*) {
     }
     float rms = static_cast<float>(std::sqrt(sum / BUFFER_SIZE));
     s_volume.store(rms, std::memory_order_relaxed);
-    // Логуємо кожен фрейм щоб побачити реальні значення
-    log::debug("MicControl RMS: {:.5f}", rms);
     (*bq)->Enqueue(bq, s_buffer, sizeof(s_buffer));
 }
 
@@ -81,19 +79,28 @@ static void stopMicrophone() {}
 #endif
 
 static bool s_wasActive = false;
+static float s_maxVolume = 0.f;
+static int s_frameCount = 0;
 
 static void processMicInput(GJBaseGameLayer* layer) {
     float sensitivity = (float)Mod::get()->getSettingValue<double>("sensitivity");
     float vol = s_volume.load(std::memory_order_relaxed);
-    bool active = (vol >= sensitivity);
 
-    if (active && !s_wasActive) {
-        log::info("MicControl: JUMP! vol={:.5f} sensitivity={:.5f}", vol, sensitivity);
-        layer->handleButton(true, 1, true);
-    } else if (!active && s_wasActive) {
-        log::info("MicControl: RELEASE vol={:.5f}", vol);
-        layer->handleButton(false, 1, true);
+    // Кожні 60 фреймів (~1 сек) показуємо max RMS нотифікацією
+    s_frameCount++;
+    if (vol > s_maxVolume) s_maxVolume = vol;
+    if (s_frameCount >= 60) {
+        Notification::create(
+            fmt::format("MicControl RMS max: {:.4f} | sens: {:.4f}", s_maxVolume, sensitivity),
+            NotificationIcon::None, 1.f
+        )->show();
+        s_maxVolume = 0.f;
+        s_frameCount = 0;
     }
+
+    bool active = (vol >= sensitivity);
+    if (active && !s_wasActive) layer->handleButton(true, 1, true);
+    else if (!active && s_wasActive) layer->handleButton(false, 1, true);
     s_wasActive = active;
 }
 
@@ -118,6 +125,8 @@ class $modify(MicPlayLayer, PlayLayer) {
     void onQuit() {
         stopMicrophone();
         s_wasActive = false;
+        s_frameCount = 0;
+        s_maxVolume = 0.f;
         PlayLayer::onQuit();
     }
 
