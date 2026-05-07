@@ -1,0 +1,38 @@
+name: Build MicControl
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup CPM Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cpm
+          key: cpm-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: cpm-
+
+      - name: Build Android (arm64)
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: v5.7.1
+          target: android64
+          build-config: Release
+          export-pdb: false
+
+      - name: Upload .geode artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MicControl-android64
+          path: build/**/*.geode
+          if-no-files-found: error

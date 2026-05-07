@@ -1,0 +1,40 @@
+{
+    "geode": "5.7.1",
+    "gd": {
+        "android": "2.2081"
+    },
+    "id": "astrodir2.miccontrol",
+    "name": "MicControl",
+    "version": "1.0.0",
+    "developer": "AstrodiR2",
+    "description": "Control your character with your microphone! Short sound = tap, long sound = hold.",
+    "tags": ["gameplay", "utility"],
+    "settings": {
+        "sensitivity": {
+            "name": "Microphone Sensitivity",
+            "description": "How loud the sound needs to be to trigger a jump (0.0 - 1.0)",
+            "type": "float",
+            "default": 0.1,
+            "min": 0.01,
+            "max": 1.0,
+            "control": {
+                "slider": true,
+                "arrows": true,
+                "arrow-step": 0.01
+            }
+        },
+        "hold-threshold": {
+            "name": "Hold Threshold (ms)",
+            "description": "How long the sound must last to count as a hold",
+            "type": "int",
+            "default": 200,
+            "min": 50,
+            "max": 1000,
+            "control": {
+                "slider": true,
+                "arrows": true,
+                "arrow-step": 50
+            }
+        }
+    }
+}
