@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "zombieapoc",
+  "version": "${version}",
+  "name": "Zombie Apocalypse",
+  "description": "Zombie apocalypse mod with TaCZ integration",
+  "authors": ["AstrodiR2"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.astrodir2.zombieapoc.ZombieApocMod"],
+    "client": ["com.astrodir2.zombieapoc.client.ZombieApocClient"]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.16.5",
+    "fabric-api": "*",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "geckolib": "*",
+    "tacz-refabricated": "*"
+  }
+}

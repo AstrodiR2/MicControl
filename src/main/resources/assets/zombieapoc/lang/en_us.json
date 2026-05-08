@@ -1,0 +1,8 @@
+{
+  "item.zombieapoc.canned_food": "Canned Food",
+  "item.zombieapoc.medkit": "Medkit",
+  "item.zombieapoc.bandage": "Bandage",
+  "item.zombieapoc.top_hat": "Top Hat",
+  "entity.zombieapoc.top_hat_zombie": "Top Hat Zombie",
+  "itemGroup.zombieapoc.main": "Zombie Apocalypse"
+}

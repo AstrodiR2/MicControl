@@ -1,31 +1,25 @@
-name: Build MicControl
-
+name: Build Mod
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build Android (arm64)
-        uses: geode-sdk/build-geode-mod@main
-        id: build
-        with:
-          sdk: v5.6.1
-          target: Android64
-          build-config: Release
-
-      - name: Upload .geode artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: MicControl-android64
-          path: ${{ steps.build.outputs.build-output }}
-          if-no-files-found: error
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+    - run: chmod +x gradlew
+    - run: ./gradlew build
+    - uses: actions/upload-artifact@v4
+      with:
+        name: zombie-apocalypse-mod
+        path: build/libs/*.jar

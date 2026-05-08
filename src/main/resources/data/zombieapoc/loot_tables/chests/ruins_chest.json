@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "zombieapoc:canned_food",
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 3 } }]
+        }
+      ]
+    },
+    {
+      "rolls": { "min": 2, "max": 4 },
+      "entries": [
+        { "type": "minecraft:item", "name": "zombieapoc:bandage", "weight": 40,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 2 } }] },
+        { "type": "minecraft:item", "name": "zombieapoc:medkit", "weight": 15,
+          "functions": [{ "function": "minecraft:set_count", "count": 1 }] },
+        { "type": "minecraft:empty", "weight": 20 }
+      ]
+    },
+    {
+      "rolls": { "min": 0, "max": 1 },
+      "entries": [
+        { "type": "minecraft:tag", "name": "tacz:guns", "weight": 25,
+          "functions": [{ "function": "minecraft:set_count", "count": 1 }] },
+        { "type": "minecraft:tag", "name": "tacz:ammo", "weight": 60,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 3, "max": 8 } }] },
+        { "type": "minecraft:empty", "weight": 15 }
+      ]
+    }
+  ]
+}

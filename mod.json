@@ -12,15 +12,15 @@
     "settings": {
         "sensitivity": {
             "name": "Microphone Sensitivity",
-            "description": "How loud the sound needs to be to trigger a jump (0.0 - 1.0)",
+            "description": "How loud the sound needs to be to trigger a jump",
             "type": "float",
-            "default": 0.1,
-            "min": 0.01,
+            "default": 0.01,
+            "min": 0.0001,
             "max": 1.0,
             "control": {
                 "slider": true,
                 "arrows": true,
-                "arrow-step": 0.01
+                "arrow-step": 0.0001
             }
         },
         "hold-threshold": {
